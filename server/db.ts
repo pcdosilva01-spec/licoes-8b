@@ -13,14 +13,14 @@ import {
 import { ENV } from "./_core/env";
 import { FIXED_CLASS_NAME } from "@shared/class";
 import { storageDelete } from "./storage";
-import { ensureMySqlTls } from "@shared/mysqlConnection";
+import { parseMySqlConnectionString } from "@shared/mysqlConnection";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(ensureMySqlTls(process.env.DATABASE_URL));
+      _db = drizzle({ connection: parseMySqlConnectionString(process.env.DATABASE_URL) });
     } catch (error) {
       console.warn("[Database] Failed to connect", error instanceof Error ? error.message : "unknown");
       _db = null;

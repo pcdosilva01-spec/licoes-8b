@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { validateRequiredEnv } from "./envValidation";
 import { storagePut } from "./storage";
-import { ensureMySqlTls } from "@shared/mysqlConnection";
+import { parseMySqlConnectionString } from "@shared/mysqlConnection";
 
 const originalEnv = { ...process.env };
 
@@ -10,10 +10,14 @@ afterEach(() => {
 });
 
 describe("conexões e produção Vercel", () => {
-  it("habilita TLS em URLs MySQL sem duplicar ssl", () => {
-    expect(ensureMySqlTls("mysql://user:pass@host:4000/db")).toBe("mysql://user:pass@host:4000/db?ssl=true");
-    expect(ensureMySqlTls("mysql://user:pass@host:4000/db?ssl=true")).toBe("mysql://user:pass@host:4000/db?ssl=true");
-    expect(ensureMySqlTls("mysql://user:pass@host:4000/db?charset=utf8mb4")).toBe("mysql://user:pass@host:4000/db?charset=utf8mb4&ssl=true");
+  it("converte a URL MySQL em opções com SSL compatível com mysql2", () => {
+    const options = parseMySqlConnectionString("mysql://user:pass@host:4000/db");
+    expect(options.host).toBe("host");
+    expect(options.port).toBe(4000);
+    expect(options.user).toBe("user");
+    expect(options.password).toBe("pass");
+    expect(options.database).toBe("db");
+    expect(options.ssl).toEqual({ minVersion: "TLSv1.2", rejectUnauthorized: true });
   });
   it("permite inicializar a API com banco e JWT mesmo sem variáveis AWS", () => {
     process.env.NODE_ENV = "production";

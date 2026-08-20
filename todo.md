@@ -161,3 +161,9 @@
 - [x] Permitir `.env` local quando ele estiver ignorado e não rastreado pelo Git.
 - [x] Bloquear `.env` somente se estiver rastreado ou aparecer no stage.
 - [x] Validar o BAT, atualizar ZIP/checkpoint e documentar o comportamento.
+
+## Correção final do TLS mysql2
+
+- [x] Substituir `ssl=true` por configuração SSL em objeto compatível com mysql2/Drizzle Kit.
+- [x] Atualizar teste, documentação e modelo de ambiente para a nova configuração.
+- [x] Validar testes/build, regenerar ZIP e salvar checkpoint.
