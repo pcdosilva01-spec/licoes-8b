@@ -137,3 +137,27 @@
 - [x] Remover o conflito entre `api/index.js` e `api/index.ts`, mantendo um único arquivo de Function no diretório `api`.
 - [x] Ajustar build e `vercel.json` para o entrypoint único e documentar o fluxo.
 - [x] Validar deploy local, testes, ZIP e checkpoint da correção.
+
+## Configuração do `.env` para migração no Windows
+
+- [x] Carregar explicitamente o arquivo `.env` no `drizzle.config.ts` antes de executar `db:push`.
+- [x] Atualizar README com a sequência correta quando `.env` já existir e o Windows perguntar sobre substituição.
+- [ ] Executar `npm run db:push` contra o TiDB real configurado pelo usuário; check, testes e build foram validados sem credenciais reais.
+
+## TLS obrigatório do TiDB Cloud
+
+- [x] Habilitar TLS automaticamente na URL MySQL usada pelo Drizzle Kit e pela aplicação.
+- [x] Documentar a alternativa manual `?ssl=true` para a `DATABASE_URL` do TiDB Cloud.
+- [x] Validar configuração, testes, build e regenerar ZIP/checkpoint.
+
+## Bug no `push-github.bat`
+
+- [x] Corrigir a leitura da confirmação `S`/`s` no Windows.
+- [x] Exibir erros e manter a janela aberta ao finalizar o script.
+- [x] Validar o BAT e regenerar ZIP/checkpoint.
+
+## Ajuste de segurança do `push-github.bat`
+
+- [x] Permitir `.env` local quando ele estiver ignorado e não rastreado pelo Git.
+- [x] Bloquear `.env` somente se estiver rastreado ou aparecer no stage.
+- [x] Validar o BAT, atualizar ZIP/checkpoint e documentar o comportamento.

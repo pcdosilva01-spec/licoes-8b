@@ -6,6 +6,7 @@ cd /d "%~dp0"
 set "REPO_URL=https://github.com/pcdosilva01-spec/licoes-8b"
 set "BRANCH=master"
 set "MESSAGE=Atualiza plataforma do 8o B"
+set "EXIT_CODE=1"
 
 echo.
 echo ================================================
@@ -14,25 +15,30 @@ echo ================================================
 echo Repositorio: %REPO_URL%
 echo Branch: %BRANCH%
 echo.
-choice /C SN /N /M "Continuar com git push --force? [S/N] "
-if errorlevel 2 goto :cancel
 
+:confirm
+echo Este script executara git push --force para o branch master.
+set "CONFIRM="
+set /p "CONFIRM=Continuar? Digite S ou N: "
+if /I "%CONFIRM%"=="S" goto :continue
+if /I "%CONFIRM%"=="N" goto :cancel
+echo Resposta invalida. Digite somente S ou N.
+echo.
+goto :confirm
+
+:continue
 where git >nul 2>nul
 if errorlevel 1 (
   echo ERRO: Git nao foi encontrado no PATH.
   goto :error
 )
 
-if exist ".env" (
-  echo ERRO: .env encontrado na raiz. Remova-o antes de continuar.
+echo Verificando arquivos de ambiente rastreados...
+for /f "delims=" %%F in ('git ls-files ^| findstr /R /I /C:"^\.env$" /C:"^\.env\." /C:"/\.env$" /C:"/\.env\." /C:"\\.env$" /C:"\\.env\."') do (
+  echo ERRO DE SEGURANCA: arquivo de ambiente ja rastreado: %%F
   goto :error
 )
-for /r %%F in (.env .env.*) do (
-  if exist "%%F" (
-    echo ERRO: arquivo de ambiente encontrado: %%F
-    goto :error
-  )
-)
+echo Um .env local ignorado pelo Git pode permanecer na pasta; ele nao sera enviado.
 
 if not exist .git (
   echo Inicializando o repositorio Git local...
@@ -80,13 +86,21 @@ goto :done
 
 :cancel
 echo Operacao cancelada.
-exit /b 1
+set "EXIT_CODE=1"
+goto :finish
 
 :error
 echo.
 echo Processo interrompido. Nenhum push foi concluido.
-exit /b 1
+set "EXIT_CODE=1"
+goto :finish
 
 :done
-endlocal
-exit /b 0
+set "EXIT_CODE=0"
+
+echo.
+echo Pressione qualquer tecla para fechar esta janela.
+
+:finish
+pause >nul
+endlocal & exit /b %EXIT_CODE%

@@ -1,4 +1,6 @@
 
-## Segunda reprodução
+## Terceira reprodução — banco TiDB
 
-Em 2026-08-20, a consulta direta a `https://licoes-8b.vercel.app/api/trpc/auth.me?...` retornou a página Vercel `500: INTERNAL_SERVER_ERROR` com código `FUNCTION_INVOCATION_FAILED` e request ID `iad1::k5cts-1787184882809-e1e28a2bfc9b`. Isso confirma que a Function está crashando no runtime; o erro `Unexpected token 'A'` é apenas o cliente tRPC tentando interpretar a página/texto de erro como JSON. Ainda é necessário o Runtime Log da Vercel para identificar a exceção exata ou, alternativamente, conferir as variáveis e o schema TiDB.
+O novo erro deixou de ser crash da Function. A rota `auth.register` agora chega ao Drizzle/mysql2 e falha no SQL `INSERT ... ON DUPLICATE KEY UPDATE` da tabela `users`. O SQL gerado é compatível com MySQL/TiDB e inclui as colunas definidas em `drizzle/schema.ts` (`openId`, `name`, `email`, `loginMethod`, `role`, `lastSignedIn`).
+
+O indício principal é que o banco usado pela `DATABASE_URL` não recebeu as migrações `drizzle/0000_milky_wraith.sql` e `drizzle/0001_lumpy_dreaming_celestial.sql`, ou a URL aponta para outro database/schema com estrutura diferente. A solução operacional é executar `npm run db:push` usando exatamente a mesma `DATABASE_URL` configurada na Vercel, preferencialmente em um database dedicado da aplicação, e depois publicar/testar novamente. O aviso de Permissions Policy sobre `unload` não é a causa do cadastro.

@@ -415,12 +415,18 @@ var auditEvents = mysqlTable(
 // shared/class.ts
 var FIXED_CLASS_NAME = "8\xBA B";
 
+// shared/mysqlConnection.ts
+function ensureMySqlTls(connectionString) {
+  if (/[?&]ssl=/i.test(connectionString)) return connectionString;
+  return `${connectionString}${connectionString.includes("?") ? "&" : "?"}ssl=true`;
+}
+
 // server/db.ts
 var _db = null;
 async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      _db = drizzle(ensureMySqlTls(process.env.DATABASE_URL));
     } catch (error) {
       console.warn("[Database] Failed to connect", error instanceof Error ? error.message : "unknown");
       _db = null;

@@ -12,9 +12,9 @@ A autorização é feita no backend. Cada consulta de lição exige sessão aute
 
 ## Desenvolvimento local
 
-Instale Node.js 22 ou superior. O projeto usa npm por padrão no Windows; pnpm também é suportado. Antes de executar o servidor, é obrigatório instalar as dependências. Copie `env.template` para um arquivo local chamado `.env` e preencha `DATABASE_URL` para persistir contas, turma e lições. Defina também um `JWT_SECRET` longo quando publicar; em desenvolvimento ele pode ficar vazio para a sessão local funcionar. O arquivo `.env` nunca deve ser commitado. A plataforma bloqueia a criação de arquivos de ambiente reais por segurança; por isso, o repositório inclui `env.template` como modelo sem valores, que pode ser renomeado localmente.
+Instale Node.js 22 ou superior. O projeto usa npm por padrão no Windows; pnpm também é suportado. Antes de executar o servidor, é obrigatório instalar as dependências. Se `.env` ainda não existir, use `copy env.template .env`; se o Windows perguntar `Substituir .env?`, responda `N` e edite o arquivo existente com `notepad .env`. Preencha `DATABASE_URL` para persistir contas, turma e lições e defina um `JWT_SECRET` longo quando publicar; em desenvolvimento ele pode ficar vazio para a sessão local funcionar. O arquivo `.env` nunca deve ser commitado. A plataforma bloqueia a criação de arquivos de ambiente reais por segurança; por isso, o repositório inclui `env.template` como modelo sem valores, que pode ser renomeado localmente.
 
-No Prompt de Comando do Windows, execute. O `npm install` é obrigatório em uma cópia nova do projeto; sem ele, comandos como `tsx` não estarão disponíveis.
+No Prompt de Comando do Windows, execute. O `npm install` é obrigatório em uma cópia nova do projeto; sem ele, comandos como `tsx` e `drizzle-kit` não estarão disponíveis.
 
 ```text
 Se aparecer erro de configuração incompleta, copie `env.template` para `.env` e preencha as variáveis do ambiente Manus. Em desenvolvimento, o servidor pode iniciar em modo limitado para permitir verificar a interface; autenticação, banco e uploads exigem as variáveis corretas. Se aparecer ERESOLVE relacionado a `@builder.io/vite-plugin-jsx-loc`, você está usando uma versão antiga do pacote. Baixe o ZIP mais recente: essa dependência foi removida porque não era compatível com Vite 7.
@@ -83,7 +83,7 @@ O projeto precisa estar publicado e acessível antes da criação do job. A roti
 
 ## GitHub sem vazar `.env`
 
-O arquivo `.gitignore` bloqueia `.env`, variações locais, chaves privadas, credenciais e logs. O script `push-github.bat` pergunta a URL do repositório, branch e mensagem de commit, inicializa ou atualiza o remote, executa `git add -A` e faz uma segunda verificação na área de stage. Se qualquer caminho semelhante a `.env` for detectado, o script desfaz o stage e aborta antes do commit ou push.
+O arquivo `.gitignore` bloqueia `.env`, variações locais, chaves privadas, credenciais e logs. O script `push-github.bat` usa o repositório fixo `https://github.com/pcdosilva01-spec/licoes-8b`, aceita `S`/`s` ou `N`/`n` na confirmação, inicializa ou atualiza o remote, executa `git add -A` e faz uma segunda verificação na área de stage. Um `.env` local pode permanecer na pasta se estiver ignorado pelo Git; o script bloqueia arquivos de ambiente rastreados ou encontrados no stage, desfaz o stage e aborta antes do commit ou push. A janela permanece aberta ao terminar para exibir o resultado.
 
 Execute no Prompt de Comando do Windows, a partir da raiz do projeto:
 
@@ -103,7 +103,7 @@ A versão de produção usa somente `api/index.js` como Function Node/Express em
 
 O projeto inclui `vercel.json` com a rota da API e o Cron diário de limpeza. Na Vercel, configure nos ambientes Production e Preview pelo menos `DATABASE_URL` e `JWT_SECRET` para a API e a autenticação local iniciarem. Para habilitar anexos PDF, configure também `AWS_REGION`, `AWS_S3_BUCKET`, `AWS_ACCESS_KEY_ID` e `AWS_SECRET_ACCESS_KEY`; para um provedor S3-compatible, preencha ainda `AWS_S3_ENDPOINT` e, se necessário, `AWS_S3_FORCE_PATH_STYLE=true`. `CRON_SECRET` é necessário para a limpeza automática diária. A ausência de S3 não derruba `auth.me` nem `auth.register`, mas bloqueia operações de PDF com uma mensagem explícita.
 
-O banco precisa ser MySQL ou compatível com o protocolo MySQL, como PlanetScale ou TiDB Cloud, porque o schema usa Drizzle com `mysql2`. Crie o banco vazio, coloque a URL em `DATABASE_URL` e execute `npm run db:push` uma vez antes de usar o ambiente de produção. Nunca coloque a URL, a chave S3 ou `CRON_SECRET` no GitHub.
+O banco precisa ser MySQL ou compatível com o protocolo MySQL, como PlanetScale ou TiDB Cloud, porque o schema usa Drizzle com `mysql2`. O projeto acrescenta `ssl=true` automaticamente à `DATABASE_URL` quando esse parâmetro não existe; também é possível informar manualmente uma URL terminada em `?ssl=true`. Crie o banco vazio, coloque a URL em `DATABASE_URL` e execute `npm run db:push` uma vez antes de usar o ambiente de produção. Nunca coloque a URL, a chave S3 ou `CRON_SECRET` no GitHub.
 
 No painel da Vercel, importe o repositório GitHub, use `npm run build` como Build Command e `dist/public` como Output Directory, se esses campos forem solicitados. A Vercel executará a Function da API e o Cron conforme o `vercel.json`. A limpeza diária exige que `CRON_SECRET` esteja configurado no projeto.
 

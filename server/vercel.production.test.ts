@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { validateRequiredEnv } from "./envValidation";
 import { storagePut } from "./storage";
+import { ensureMySqlTls } from "@shared/mysqlConnection";
 
 const originalEnv = { ...process.env };
 
@@ -8,7 +9,12 @@ afterEach(() => {
   process.env = { ...originalEnv };
 });
 
-describe("produção Vercel sem configuração de storage", () => {
+describe("conexões e produção Vercel", () => {
+  it("habilita TLS em URLs MySQL sem duplicar ssl", () => {
+    expect(ensureMySqlTls("mysql://user:pass@host:4000/db")).toBe("mysql://user:pass@host:4000/db?ssl=true");
+    expect(ensureMySqlTls("mysql://user:pass@host:4000/db?ssl=true")).toBe("mysql://user:pass@host:4000/db?ssl=true");
+    expect(ensureMySqlTls("mysql://user:pass@host:4000/db?charset=utf8mb4")).toBe("mysql://user:pass@host:4000/db?charset=utf8mb4&ssl=true");
+  });
   it("permite inicializar a API com banco e JWT mesmo sem variáveis AWS", () => {
     process.env.NODE_ENV = "production";
     process.env.DATABASE_URL = "mysql://user:password@localhost:3306/database";
